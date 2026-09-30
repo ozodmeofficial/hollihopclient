@@ -1,0 +1,64 @@
+name: Android APK
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Check UI scripts
+        run: for f in app/src/main/assets/app/*.js app/src/main/assets/engine/*.js; do node --check "$f"; done
+
+      - name: Prepare signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          else
+            echo "::warning::KEYSTORE_BASE64 secret yo'q - vaqtinchalik kalit bilan imzolanadi (yangilashda ilovani qayta o'rnatish kerak bo'ladi)"
+            keytool -genkeypair -keystore "$RUNNER_TEMP/release.jks" -alias hollihop -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass hollihop2026 -keypass hollihop2026 -dname "CN=Hollihop Client, C=UZ"
+          fi
+          echo "KEYSTORE_FILE=$RUNNER_TEMP/release.jks" >> "$GITHUB_ENV"
+
+      - name: Build release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'hollihop2026' }}
+          KEY_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD || 'hollihop2026' }}
+          VERSION_CODE: ${{ github.run_number }}
+          VERSION_NAME: 1.0.${{ github.run_number }}
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleRelease
+          mkdir -p out
+          cp app/build/outputs/apk/release/app-release.apk out/HollihopClient-1.0.${{ github.run_number }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HollihopClient-apk
+          path: out/*.apk
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Hollihop Client 1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          prerelease: ${{ github.ref_name != 'main' }}
+          files: out/*.apk

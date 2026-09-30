@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hollihop Client</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header id="top">
+      <button id="backBtn" class="icon-btn" aria-label="Orqaga" hidden>←</button>
+      <div class="title-wrap">
+        <h1 id="title">Hollihop Client</h1>
+        <div id="subtitle"></div>
+      </div>
+      <span id="sessionDot" class="dot" title="Sessiya"></span>
+      <button id="refreshBtn" class="icon-btn" aria-label="Yangilash">↻</button>
+    </header>
+    <main id="view"></main>
+    <nav id="tabs">
+      <button data-tab="home"><span>⌂</span>Bugun</button>
+      <button data-tab="groups"><span>▦</span>Guruhlar</button>
+      <button data-tab="students"><span>☺</span>O'quvchilar</button>
+      <button data-tab="calls"><span>☎</span>Qo'ng'iroq</button>
+      <button data-tab="analytics"><span>▲</span>Tahlil</button>
+      <button data-tab="more"><span>≡</span>Ko'proq</button>
+    </nav>
+  </div>
+  <div id="sheet" hidden><div class="sheet-body"></div></div>
+  <div id="toast" hidden></div>
+  <script src="core.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
