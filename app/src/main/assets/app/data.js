@@ -155,7 +155,8 @@ const ApiV2 = {
 
   async probe() {
     const r = await this.call('GetEdUnits', { types: 'Group', take: 1 });
-    return !!(r && (r.edUnits || Array.isArray(r)));
+    if (r && (r.edUnits || Array.isArray(r))) return true;
+    throw new SourceError('API javobi: ' + JSON.stringify(r).slice(0, 160));
   },
 
   async groups() {
